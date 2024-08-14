@@ -1,0 +1,5 @@
+fastapi==0.112.0
+uvicorn==0.30.6
+asyncpg==0.29.0
+cachetools==5.4.0
+asyncache==0.3.1
