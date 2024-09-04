@@ -12,6 +12,16 @@ from fastapi.staticfiles import StaticFiles
 from starlette.requests import Request
 import os
 import json
+
+
+class CustomHeaderMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        if request.url.path.endswith(".pbf"):
+            response.headers["Content-Type"] = "application/x-protobuf"
+        return response
+
+
 app = FastAPI()
 
 app.add_middleware(
@@ -22,12 +32,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class CustomHeaderMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        response = await call_next(request)
-        if request.url.path.endswith(".pbf"):
-            response.headers["Content-Type"] = "application/x-protobuf"
-        return response
 
 TILE_DIR = os.getenv('TILE_DIR', './tiles')
 
