@@ -8,6 +8,7 @@ import asyncpg
 from asyncache import cached
 from cachetools import TTLCache
 from fastapi.staticfiles import StaticFiles
+from starlette.types import Scope, Receive, Send
 import os
 import json
 app = FastAPI()
@@ -20,10 +21,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class CustomStaticFiles(StaticFiles):
+    async def get_response(self, path: str, scope: dict, receive: Receive) -> Response:
+        response = await super().get_response(path, scope, receive)
+        if path.endswith(".pbf"):
+            response.headers["Content-Type"] = "application/x-protobuf"
+        return response
+
 
 TILE_DIR = os.getenv('TILE_DIR', './tiles')
 
-app.mount("/tiles", StaticFiles(directory=TILE_DIR), name="tiles")
+app.mount("/tiles", CustomStaticFiles(directory=TILE_DIR), name="tiles")
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL", "postgresql://kshitij:admin@localhost:5432/postgres"
